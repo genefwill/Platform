@@ -16,10 +16,25 @@ floor_image = pygame.image.load('check.png')
 FLOOR_TILE = floor_image.get_width()
 shelf_image = pygame.image.load('shelf.png')
 SHELF_TILE = shelf_image.get_width()
+white_image = pygame.image.load('white.png')
+WHITE_TILE = floor_image.get_width()
+black_image = pygame.image.load('black.png')
+BLACK_TILE = shelf_image.get_width()
 
+scroll = [0,0]
 
+def load_map(path):
+    f = open(path + '.txt','r')
+    data = f.read()
+    f.close()
+    data = data.split('\n')
+    game_map = []
+    for row in data:
+        game_map.append(list(row))
+    return game_map
+game_map = load_map('map')
 
-game_map = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
+game_map2 = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
@@ -57,7 +72,7 @@ def move(rect,movement,tiles):
         if movement[1] > 0:
             rect.bottom = tile.top
             collision_types['bottom'] = True
-        elif movement[0] < 0:
+        elif movement[1] < 0:
             rect.top = tile.bottom
             collision_types['top'] = True
     return rect, collision_types
@@ -67,11 +82,15 @@ moving_left = False
 
 player_location = [50,300]
 player_y_momentum = 0
+air_timer = 0
 
 player_rect = pygame.Rect(player_location[0],player_location[1],player_image.get_width(),player_image.get_height())
 test_rect = pygame.Rect(100, 100, 100,50)
 while True:
     display.fill((146,244,255))
+
+    scroll[0] += (player_rect.x - scroll[0]- 315)
+    scroll[1] += (player_rect.y - scroll[1] - 300)
 
     tile_rects = []
     y = 0
@@ -79,9 +98,13 @@ while True:
         x = 0
         for tile in row:
             if tile == '1':
-                display.blit(floor_image, (x * FLOOR_TILE, y * FLOOR_TILE))
+                display.blit(floor_image, (x * FLOOR_TILE - scroll[0], y * FLOOR_TILE - scroll[1]))
             if tile == '2':
-                display.blit(shelf_image, (x * SHELF_TILE, y * SHELF_TILE))
+                display.blit(shelf_image, (x * SHELF_TILE - scroll[0], y * SHELF_TILE - scroll[1]))
+            if tile == '3':
+                display.blit(white_image, (x * WHITE_TILE - scroll[0], y * WHITE_TILE - scroll[1]))
+            if tile == '4':
+                display.blit(black_image, (x * BLACK_TILE - scroll[0], y  * BLACK_TILE - scroll[1]))
             if tile != '0':
                 tile_rects.append(pygame.Rect(x * SHELF_TILE, y * SHELF_TILE, SHELF_TILE, SHELF_TILE))
 
@@ -106,7 +129,16 @@ while True:
 
     player_rect, collisions = move(player_rect, player_movement, tile_rects)
 
-    display.blit(player_image, (player_rect.x, player_rect.y))
+    if collisions['bottom']:
+        player_y_momentum = 0
+        air_timer = 0
+    else:
+        air_timer += 1
+
+    if collisions['top']:
+        player_y_momentum = 0
+
+    display.blit(player_image, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
 
     if player_rect.colliderect(test_rect):
         pygame.draw.rect(screen,(255,0,0),test_rect)
@@ -124,7 +156,8 @@ while True:
             if event.key == K_LEFT:
                 moving_left = True
             if event.key == K_UP:
-                player_y_momentum = -6
+                if air_timer < 6:
+                    player_y_momentum = -6
         if event.type == KEYUP:
             if event.key == K_RIGHT:
                 moving_right = False
