@@ -22,6 +22,8 @@ white_image = pygame.image.load('white.png')
 WHITE_TILE = floor_image.get_width()
 black_image = pygame.image.load('black.png')
 BLACK_TILE = shelf_image.get_width()
+grey_image = pygame.image.load('grey.png')
+GREY_TILE = shelf_image.get_width()
 
 #creating scroll variable
 scroll = [0,0]
@@ -119,7 +121,7 @@ while True:
     display.fill((146,244,255))
 
     #defining scroll value based on character location
-    scroll[0] += (player_rect.x - scroll[0]- 315)
+    scroll[0] += (player_rect.x - scroll[0]- 50)
     scroll[1] += (player_rect.y - scroll[1] - 300)
 
     #defining list of tile rectangles for map
@@ -137,6 +139,8 @@ while True:
                 display.blit(white_image, (x * WHITE_TILE - scroll[0], y * WHITE_TILE - scroll[1]))
             if tile == '4':
                 display.blit(black_image, (x * BLACK_TILE - scroll[0], y  * BLACK_TILE - scroll[1]))
+            if tile == '5':
+                display.blit(grey_image, (x * GREY_TILE - scroll[0], y  * GREY_TILE - scroll[1]))
             if tile != '0':
                 tile_rects.append(pygame.Rect(x * SHELF_TILE, y * SHELF_TILE, SHELF_TILE, SHELF_TILE))
 
@@ -187,7 +191,7 @@ while True:
                 moving_left = True
             if event.key == K_UP:
                 if air_timer < 6:
-                    player_y_momentum = -6
+                    player_y_momentum = -6.25
         if event.type == KEYUP:
             if event.key == K_RIGHT:
                 moving_right = False
